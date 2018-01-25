@@ -16,7 +16,7 @@ class AnalyzeDependenciesPlugin implements Plugin<Project> {
         project.configurations.create('permitUnusedDeclared')
         project.configurations.create('permitTestUnusedDeclared')
 
-        def mainTask = project.task('analyzeClassesDependencies',
+        project.tasks.create('analyzeClassesDependencies',
                 dependsOn: 'classes',
                 type: AnalyzeDependenciesTask,
                 group: 'Verification',
@@ -34,31 +34,5 @@ class AnalyzeDependenciesPlugin implements Plugin<Project> {
             classesDirs = output.hasProperty('classesDirs') ? output.classesDirs : project.files(output.classesDir)
         }
 
-        def testTask = project.task('analyzeTestClassesDependencies',
-                dependsOn: 'testClasses',
-                type: AnalyzeDependenciesTask,
-                group: 'Verification',
-                description: 'Analyze project for dependency issues related to test source set.'
-        ) {
-            require = [
-                    project.configurations.testCompile,
-                    project.configurations.findByName('testCompileOnly')
-            ]
-            allowedToUse = [
-                    project.configurations.compile,
-                    project.configurations.findByName('provided')
-            ]
-            allowedToDeclare = [
-                    project.configurations.permitTestUnusedDeclared
-            ]
-            def output = project.sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME).output
-            classesDirs = output.hasProperty('classesDirs') ? output.classesDirs : project.files(output.classesDir)
-        }
-
-        project.check.dependsOn project.task('analyzeDependencies',
-                dependsOn: [mainTask, testTask],
-                group: 'Verification',
-                description: 'Analyze project for dependency issues.'
-        )
     }
 }
